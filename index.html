@@ -1,1 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pattern Pop — Support</title>
+    <meta name="description" content="Pattern Pop is a minimalist pattern-matching puzzle game for iPhone. No ads, no clutter — just puzzles.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --white: #fafafa;
+            --gray-100: #f0f0f0;
+            --gray-200: #e0e0e0;
+            --gray-400: #999;
+            --gray-600: #666;
+            --gray-800: #333;
+            --mono: 'DM Mono', monospace;
+            --sans: 'Sora', system-ui, sans-serif;
+        }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--sans);
+            background: var(--white);
+            color: var(--black);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- Animated tile background --- */
+        .bg-tiles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.035;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .bg-tiles svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- Layout --- */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* --- Header --- */
+        header {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+
+        .app-icon {
+            width: 96px;
+            height: 96px;
+            border-radius: 22px;
+            background: var(--black);
+            display: inline-grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px;
+            padding: 14px;
+            margin-bottom: 28px;
+            animation: fadeUp 0.8s ease both;
+        }
+
+        .app-icon .tile {
+            border-radius: 4px;
+            background: var(--white);
+        }
+
+        .app-icon .tile:nth-child(1) {
+            background: var(--white);
+        }
+
+        .app-icon .tile:nth-child(2) {
+            background: var(--white);
+            background-image: radial-gradient(circle, var(--black) 2px, transparent 2px);
+            background-size: 8px 8px;
+            background-position: 2px 2px;
+        }
+
+        .app-icon .tile:nth-child(3) {
+            background: repeating-conic-gradient(var(--black) 0% 25%, var(--white) 0% 50%) 50% / 10px 10px;
+        }
+
+        .app-icon .tile:nth-child(4) {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--black);
+            font-family: var(--sans);
+        }
+
+        h1 {
+            font-size: clamp(2.4rem, 6vw, 3.2rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            animation: fadeUp 0.8s ease 0.1s both;
+        }
+
+        .tagline {
+            font-family: var(--mono);
+            font-size: 0.95rem;
+            color: var(--gray-600);
+            margin-top: 12px;
+            animation: fadeUp 0.8s ease 0.2s both;
+        }
+
+        /* --- Navigation --- */
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 20px 0 60px;
+            flex-wrap: wrap;
+            animation: fadeUp 0.8s ease 0.3s both;
+        }
+
+        nav a {
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            text-decoration: none;
+            color: var(--black);
+            padding: 8px 16px;
+            border: 1.5px solid var(--gray-200);
+            border-radius: 100px;
+            transition: all 0.2s ease;
+        }
+
+        nav a:hover {
+            background: var(--black);
+            color: var(--white);
+            border-color: var(--black);
+        }
+
+        nav a.active {
+            background: var(--black);
+            color: var(--white);
+            border-color: var(--black);
+        }
+
+        /* --- Sections --- */
+        section {
+            padding: 40px 0;
+            animation: fadeUp 0.6s ease both;
+        }
+
+        section + section {
+            border-top: 1px solid var(--gray-200);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: var(--gray-800);
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+        }
+
+        p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* --- FAQ --- */
+        .faq-item {
+            padding: 20px 0;
+        }
+
+        .faq-item + .faq-item {
+            border-top: 1px solid var(--gray-100);
+        }
+
+        .faq-q {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 8px;
+            letter-spacing: -0.01em;
+        }
+
+        .faq-a {
+            color: var(--gray-600);
+            font-size: 0.92rem;
+        }
+
+        /* --- Contact Card --- */
+        .contact-card {
+            background: var(--gray-100);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .contact-card p {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+
+        .contact-email {
+            display: inline-block;
+            font-family: var(--mono);
+            font-size: 1rem;
+            color: var(--black);
+            text-decoration: none;
+            padding: 12px 28px;
+            border: 2px solid var(--black);
+            border-radius: 100px;
+            margin-top: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .contact-email:hover {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        /* --- App Store Badge --- */
+        .download-section {
+            text-align: center;
+            padding: 60px 0;
+        }
+
+        .app-store-badge {
+            display: inline-block;
+            background: var(--black);
+            color: var(--white);
+            font-family: var(--sans);
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 16px 36px;
+            border-radius: 14px;
+            transition: all 0.2s ease;
+            letter-spacing: -0.01em;
+        }
+
+        .app-store-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+
+        .app-store-badge small {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 300;
+            opacity: 0.7;
+            margin-bottom: 2px;
+            letter-spacing: 0.02em;
+        }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            padding: 40px 0 60px;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        footer p {
+            font-family: var(--mono);
+            font-size: 0.78rem;
+            color: var(--gray-400);
+        }
+
+        footer a {
+            color: var(--gray-600);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: var(--black);
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 480px) {
+            header {
+                padding: 60px 0 40px;
+            }
+
+            .contact-card {
+                padding: 24px 20px;
+            }
+
+            nav {
+                gap: 6px;
+            }
+
+            nav a {
+                font-size: 0.75rem;
+                padding: 6px 12px;
+            }
+        }
+
+        /* --- Page-specific visibility --- */
+        .page { display: none; }
+        .page.active { display: block; }
+    </style>
+</head>
+<body>
+
+    <!-- Subtle tiled background pattern -->
+    <div class="bg-tiles">
+        <svg width="100%" height="100%">
+            <defs>
+                <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+                    <rect width="28" height="28" x="2" y="2" rx="4" fill="currentColor"/>
+                    <rect width="28" height="28" x="32" y="32" rx="4" fill="currentColor"/>
+                    <line x1="38" y1="8" x2="54" y2="24" stroke="currentColor" stroke-width="3"/>
+                    <line x1="54" y1="8" x2="38" y2="24" stroke="currentColor" stroke-width="3"/>
+                    <circle cx="16" cy="46" r="8" fill="none" stroke="currentColor" stroke-width="2.5"/>
+                </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)"/>
+        </svg>
+    </div>
+
+    <div class="container">
+
+        <!-- Header -->
+        <header>
+            <div class="app-icon">
+                <div class="tile"></div>
+                <div class="tile"></div>
+                <div class="tile"></div>
+                <div class="tile">&#x2715;</div>
+            </div>
+            <h1>Pattern Pop</h1>
+            <p class="tagline">Match patterns, clear tiles!</p>
+        </header>
+
+        <!-- Nav -->
+        <nav>
+            <a href="#support" class="active" onclick="showPage('support', this)">Support</a>
+            <a href="#faq" onclick="showPage('faq', this)">FAQ</a>
+            <a href="#privacy" onclick="showPage('privacy', this)">Privacy Policy</a>
+        </nav>
+
+        <!-- === SUPPORT PAGE === -->
+        <div id="support" class="page active">
+            <section>
+                <h2>Need Help?</h2>
+                <p>
+                    Pattern Pop is built and maintained by a single indie developer. If you're running into a bug, have a suggestion, or just want to say hi, I'd love to hear from you.
+                </p>
+                <p>
+                    I read every email and typically respond within 48 hours.
+                </p>
+
+                <div class="contact-card">
+                    <p>Reach out anytime</p>
+                    <a href="/cdn-cgi/l/email-protection#ef9c9a9f9f809d9baf9f8e9b9b8a9d819f809fc18e9f9f" class="contact-email"><span class="__cf_email__" data-cfemail="bdcec8cdcdd2cfc9fdcddcc9c9d8cfd3cdd2cd93dccdcd">[email&#160;protected]</span></a>
+                </div>
+            </section>
+
+            <section>
+                <h2>Helpful Info to Include</h2>
+                <p>
+                    If you're reporting a bug, it helps if you can share what device you're using (e.g. iPhone 15), which iOS version you're on, and a brief description of what happened. Screenshots are always welcome too.
+                </p>
+            </section>
+
+            <section style="animation-delay: 0.2s">
+                <h2>Leave a Review</h2>
+                <p>
+                    Pattern Pop is a one-person project. If you're enjoying the game, a review on the App Store makes a huge difference — it helps other puzzle fans find the game and keeps development going.
+                </p>
+            </section>
+
+            <div class="download-section">
+                <a href="#" class="app-store-badge">
+                    <small>Download on the</small>
+                    App Store
+                </a>
+            </div>
+        </div>
+
+        <!-- === FAQ PAGE === -->
+        <div id="faq" class="page">
+            <section>
+                <h2>Frequently Asked Questions</h2>
+
+                <div class="faq-item">
+                    <div class="faq-q">How do I play?</div>
+                    <div class="faq-a">Tap groups of 3 or more tiles with the same pattern to clear them from the board. The bigger the group, the more points you earn. Reach the target score before you run out of moves to complete the level.</div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-q">Are there ads in Pattern Pop?</div>
+                    <div class="faq-a">No. Pattern Pop is completely ad-free and always will be. You paid for the game — you deserve an uninterrupted experience.</div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-q">How many levels are there?</div>
+                    <div class="faq-a">Pattern Pop launches with 100+ levels of increasing difficulty. More levels will be added in future updates at no extra cost.</div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-q">What does the star rating mean?</div>
+                    <div class="faq-a">Each level awards 1–3 stars based on how efficiently you reach the target score. Finishing with moves to spare earns you more stars. Try to three-star every level!</div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-q">What is the Tip Jar?</div>
+                    <div class="faq-a">The Tip Jar is a completely optional way to support ongoing development. It's not required for any gameplay — just a way to say thanks if you enjoy the game.</div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-q">I'm stuck on a level. Any tips?</div>
+                    <div class="faq-a">Look for large groups rather than small ones — a group of 5 scores much more than two groups of 3. Also, focus on clearing tiles from the bottom of the board first to create chain reactions as new tiles fall in.</div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-q">Does Pattern Pop require an internet connection?</div>
+                    <div class="faq-a">No. Pattern Pop works fully offline. Play anywhere, anytime.</div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-q">I found a bug. How do I report it?</div>
+                    <div class="faq-a">Please email <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="15666065657a6761556574616170677b657a653b746565">[email&#160;protected]</a> with a description of what happened, your device model, and iOS version. Screenshots or screen recordings are super helpful too.</div>
+                </div>
+            </section>
+        </div>
+
+        <!-- === PRIVACY POLICY PAGE === -->
+        <div id="privacy" class="page">
+            <section>
+                <h2>Privacy Policy</h2>
+                <p><em>Last updated: February 2026</em></p>
+            </section>
+
+            <section>
+                <h2>The Short Version</h2>
+                <p>
+                    Pattern Pop does not collect, store, or share any personal data. Period.
+                </p>
+            </section>
+
+            <section>
+                <h2>Data Collection</h2>
+                <p>
+                    Pattern Pop does not collect any personal information, usage analytics, crash reports, device identifiers, or location data. The game does not use any third-party analytics, advertising, or tracking SDKs.
+                </p>
+                <p>
+                    Your game progress (levels completed, high scores, star ratings) is stored locally on your device and is not transmitted anywhere.
+                </p>
+            </section>
+
+            <section>
+                <h2>In-App Purchases</h2>
+                <p>
+                    Pattern Pop offers optional Tip Jar purchases processed entirely by Apple through the App Store. Payment information is handled by Apple and is never accessible to us. We do not receive or store any financial data.
+                </p>
+            </section>
+
+            <section>
+                <h2>Third-Party Services</h2>
+                <p>
+                    Pattern Pop does not integrate any third-party services, SDKs, or APIs that collect user data.
+                </p>
+            </section>
+
+            <section>
+                <h2>Children's Privacy</h2>
+                <p>
+                    Pattern Pop does not knowingly collect any information from anyone, including children under the age of 13. Since no data is collected at all, the app is safe for users of all ages.
+                </p>
+            </section>
+
+            <section>
+                <h2>Changes to This Policy</h2>
+                <p>
+                    If this privacy policy ever changes, updates will be posted on this page with a revised date. Given that the app collects no data, significant changes are unlikely.
+                </p>
+            </section>
+
+            <section>
+                <h2>Contact</h2>
+                <p>
+                    Questions about this privacy policy? Email <a href="/cdn-cgi/l/email-protection#22515752524d5056625243565647504c524d520c435252" style="color: var(--black); font-family: var(--mono); font-size: 0.9rem;"><span class="__cf_email__" data-cfemail="3b484e4b4b54494f7b4b5a4f4f5e49554b544b155a4b4b">[email&#160;protected]</span></a>
+                </p>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 Anthony Ferraro &nbsp;&middot;&nbsp; <a href="#privacy" onclick="showPage('privacy', document.querySelector('nav a:nth-child(3)'))">Privacy</a> &nbsp;&middot;&nbsp; <a href="/cdn-cgi/l/email-protection#6615131616091412261607121203140816091648071616">Contact</a></p>
+        </footer>
+
+    </div>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        function showPage(pageId, navEl) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            // Show selected
+            document.getElementById(pageId).classList.add('active');
+            // Update nav
+            document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+            if (navEl) navEl.classList.add('active');
+            // Scroll to top smoothly
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Handle direct hash navigation
+        window.addEventListener('hashchange', () => {
+            const hash = location.hash.replace('#', '');
+            if (['support', 'faq', 'privacy'].includes(hash)) {
+                const navLinks = document.querySelectorAll('nav a');
+           
